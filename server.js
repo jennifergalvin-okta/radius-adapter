@@ -1,0 +1,75 @@
+var radius = require('radius');
+var dgram = require("dgram");
+
+var secret = 'PeterPiperPickedAPeckOfPickledPeppers';
+var server = dgram.createSocket("udp4");
+var destinationIP = 'localhost';
+var destinationPort = '1813';
+
+server.on("message", function (msg, rinfo) {
+  var code, username, password, packet;
+  packet = radius.decode({packet: msg, secret: secret});
+
+  // Pass everything else
+  if (packet.code != 'Access-Request')
+  {
+    var newPacket = radius.encode(
+    {
+      code: packet.code,
+      secret: secret,
+      attributes: packet.attributes
+    });
+    console.log("Received packet.code = " + packet.code + ", ignoring");
+  }
+  else
+  {
+    
+    username = packet.attributes['User-Name'];
+    password = packet.attributes['User-Password'];
+  
+    var newPassword;
+  
+    if ( (! password.trim().endsWith(",menu")) || (! password.trim().endsWith(",push")) )
+    { 
+      newPassword = password + ",push";
+      console.log("Access-Request for " + username + ", appending ,push for auto-push");
+    }
+    else
+    {
+      if (password.trim().endsWith(",menu")
+      { 
+        newPassword = password.trim().replace(",menu", "");
+        console.log("Access-Request for " + username + ", request for menu, trimming ,menu from password field");
+      }
+    
+      if (password.trim.endsWith(",push")
+      {
+        newPassword = password;
+        console.log("Access-Request for " + username + ", request for push included, doing nothing");
+      }
+  
+      var newPacket = radius.encode({
+      code: packet.code,
+      secret: secret,
+      attributes: [
+        ['NAS-IP-Address'], packet.attributes['NAS-IP-Address'],
+        ['User-Name'], packet.attributes['User-Name'],
+        ['User-Password'], newPassword]
+      });    
+    }
+ 
+  console.log("Sending newPacket");
+  server.send(newPacket, 0, response.length, destinationPort, destinationIP, function(err, bytes) {
+    if (err) {
+      console.log("Error sending response to ", destinationIP);
+    }
+  });
+});
+
+server.on("listening", function () {
+  var address = server.address();
+  console.log("radius server listening " +
+      address.address + ":" + address.port);
+});
+
+server.bind(1812);
