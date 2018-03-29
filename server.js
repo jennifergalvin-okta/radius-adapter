@@ -16,14 +16,13 @@ server.on("message", function (msg, rinfo)
   // Pass everything else
   if (packet.code != 'Access-Request')
   {
-    var newPacket = radius.encode(
-    {
+    var newPacket = radius.encode({
       code: packet.code,
       secret: secret,
       attributes: packet.attributes
     });
     console.log("Received packet.code = " + packet.code + ", ignoring");
-
+  }
   else
   {
     
