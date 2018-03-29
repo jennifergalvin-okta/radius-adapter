@@ -38,13 +38,13 @@ server.on("message", function (msg, rinfo)
     }
     else
     {
-      if (password.trim().endsWith(",menu")
+      if (password.trim().endsWith(",menu"))
       { 
         newPassword = password.trim().replace(",menu", "");
         console.log("Access-Request for " + username + ", request for menu, trimming ,menu from password field");
       }
     
-      if (password.trim.endsWith(",push")
+      if (password.trim.endsWith(",push"))
       {
         newPassword = password;
         console.log("Access-Request for " + username + ", request for push included, doing nothing");
