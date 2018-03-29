@@ -58,18 +58,18 @@ server.on("message", function (msg, rinfo)
         ['User-Name'], packet.attributes['User-Name'],
         ['User-Password'], newPassword]
       });    
-    }
- 
-    switch(rinfo.address)
-    {   
-      case sourceIP:
-        radiusDestination = destinationIP;
-        radiusPort = destinationPort;
-        break;
-      case destinationIP:
-        radiusDestination = sourceIP;
-        radiusPort = sourcePort;      
-    }
+  }
+     
+  switch(rinfo.address)
+  {   
+    case sourceIP:
+      radiusDestination = destinationIP;
+      radiusPort = destinationPort;
+      break;
+    case destinationIP:
+      radiusDestination = sourceIP;
+      radiusPort = sourcePort;      
+  }
   
   console.log("Sending newPacket");
   server.send(newPacket, 0, response.length, radiusDestinationPort, radiusDestinationIP, function(err, bytes) {
