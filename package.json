@@ -1,5 +1,5 @@
 {
-  "name": "custom-otp-example-server",
+  "name": "radius-adapter",
   "version": "1.0.0",
   "description": "Proxies RADIUS requests to prompt Okta Autopush",
   "main": "server.js",
