@@ -11,23 +11,17 @@ var destinationPort = '1813';
 
 server.on("message", function (msg, rinfo)
 {
-  var code, username, password, packet, radiusDestination, radiusPort, newPacket;
+  var code, username, password, packet, radiusDestination, radiusPort, newPacket, newPassword;
   packet = radius.decode({packet: msg, secret: secret});
 
   // Pass everything else
   if (packet.code != 'Access-Request')
   {
-    newPacket = radius.encode(
-    {
-      code: packet.code,
-      secret: secret,
-      attributes: packet.attributes
-    });
+    newPacket = packet;
     console.log("Received packet.code = " + packet.code + ", ignoring");
   }
   else
   {
-
     username = packet.attributes['User-Name'];
     password = packet.attributes['User-Password'];
 
@@ -63,6 +57,7 @@ server.on("message", function (msg, rinfo)
       });
     }
 
+    // Send the packet on to the opposite side
     switch(rinfo.address)
     {
       case sourceIP:
@@ -75,7 +70,7 @@ server.on("message", function (msg, rinfo)
         break;
     }
 
-    console.log("Sending newPacket");
+    console.log("Sending newPacket to " + radiusDestination + ", port " + radiusPort);
     server.send(newPacket, 0, newPacket.length, radiusDestinationPort, radiusDestinationIP, function(err, bytes)
     {
       if (err)
