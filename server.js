@@ -11,13 +11,13 @@ var destinationPort = '1813';
 
 server.on("message", function (msg, rinfo)
 {
-  var code, username, password, packet, radiusDestination, radiusPort;
+  var code, username, password, packet, radiusDestination, radiusPort, newPacket;
   packet = radius.decode({packet: msg, secret: secret});
 
   // Pass everything else
   if (packet.code != 'Access-Request')
   {
-    var newPacket = radius.encode(
+    newPacket = radius.encode(
     {
       code: packet.code,
       secret: secret,
@@ -52,7 +52,7 @@ server.on("message", function (msg, rinfo)
         console.log("Access-Request for " + username + ", request for push included, doing nothing");
       }
 
-      var newPacket = radius.encode(
+      newPacket = radius.encode(
       {
         code: packet.code,
         secret: secret,
