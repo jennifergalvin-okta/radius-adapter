@@ -3,11 +3,14 @@ var dgram = require("dgram");
 
 var secret = 'PeterPiperPickedAPeckOfPickledPeppers';
 var server = dgram.createSocket("udp4");
+var sourceIP = 'localhost';
+var sourcePort = '1813';
 var destinationIP = 'localhost';
 var destinationPort = '1813';
 
-server.on("message", function (msg, rinfo) {
-  var code, username, password, packet;
+server.on("message", function (msg, rinfo) 
+{
+  var code, username, password, packet, radiusDestination, radiusPort;
   packet = radius.decode({packet: msg, secret: secret});
 
   // Pass everything else
@@ -20,7 +23,7 @@ server.on("message", function (msg, rinfo) {
       attributes: packet.attributes
     });
     console.log("Received packet.code = " + packet.code + ", ignoring");
-  }
+
   else
   {
     
@@ -29,7 +32,7 @@ server.on("message", function (msg, rinfo) {
   
     var newPassword;
   
-    if ( (! password.trim().endsWith(",menu")) || (! password.trim().endsWith(",push")) )
+    if ( ! password.trim().endsWith(",menu") || ! password.trim().endsWith(",push") )
     { 
       newPassword = password + ",push";
       console.log("Access-Request for " + username + ", appending ,push for auto-push");
@@ -58,8 +61,19 @@ server.on("message", function (msg, rinfo) {
       });    
     }
  
+    switch(rinfo.address)
+    {   
+      case sourceIP:
+        radiusDestination = destinationIP;
+        radiusPort = destinationPort;
+        break;
+      case destinationIP:
+        radiusDestination = sourceIP;
+        radiusPort = sourcePort;      
+    }
+  
   console.log("Sending newPacket");
-  server.send(newPacket, 0, response.length, destinationPort, destinationIP, function(err, bytes) {
+  server.send(newPacket, 0, response.length, radiusDestinationPort, radiusDestinationIP, function(err, bytes) {
     if (err) {
       console.log("Error sending response to ", destinationIP);
     }
