@@ -3,6 +3,7 @@ var dgram = require("dgram");
 
 var secret = 'PeterPiperPickedAPeckOfPickledPeppers';
 var server = dgram.createSocket("udp4");
+var listenPort = '1812';
 var sourceIP = 'localhost';
 var sourcePort = '1813';
 var destinationIP = 'localhost';
@@ -92,4 +93,4 @@ server.on("listening", function ()
       address.address + ":" + address.port);
 });
 
-server.bind(1812);
+server.bind(listenPort);
