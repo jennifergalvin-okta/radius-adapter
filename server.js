@@ -76,7 +76,7 @@ server.on("message", function (msg, rinfo)
     }
 
     console.log("Sending newPacket");
-    server.send(newPacket, 0, response.length, radiusDestinationPort, radiusDestinationIP, function(err, bytes)
+    server.send(newPacket, 0, newPacket.length, radiusDestinationPort, radiusDestinationIP, function(err, bytes)
     {
       if (err)
         { console.log("Error sending response to ", destinationIP); }
