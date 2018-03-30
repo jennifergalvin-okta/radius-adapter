@@ -1,78 +1,76 @@
 var radius = require('radius');
 var dgram = require("dgram");
 
-var secret = 'PeterPiperPickedAPeckOfPickledPeppers';
+var secret = "secretsecretsecret";
 var server = dgram.createSocket("udp4");
-var listenPort = '1812';
-var sourceIP = 'localhost';
-var sourcePort = '1813';
-var destinationIP = 'localhost';
-var destinationPort = '1813';
+var listenPort = "1812";
+var sourceIP = "localhost";
+var sourcePort = "1812";
+var destinationIP = "localhost";
+var destinationPort = "1813";
 
 server.on("message", function (msg, rinfo)
 {
-  var code, username, password, packet, radiusDestination, radiusPort, newPacket, newPassword;
+  var username, password, packet, radiusDestinationIP, radiusDestinationPort, newPassword;
+  
   packet = radius.decode({packet: msg, secret: secret});
+  console.log("Received packet from " + rinfo.address + " on port " + rinfo.port + ", packet is " + JSON.stringify(packet));
 
+  
+  username = packet.attributes['User-Name'];
+  password = packet.attributes['User-Password'];
+  
   // Pass everything else
   if (packet.code != 'Access-Request')
-  {
-    newPacket = packet;
-    console.log("Received packet.code = " + packet.code + ", ignoring");
-  }
+	{ console.log("Received packet.code = " + packet.code + ", ignoring"); }
   else
   {
-    username = packet.attributes['User-Name'];
-    password = packet.attributes['User-Password'];
 
-    var newPassword;
-
-    if ( ! password.trim().endsWith(",menu") || ! password.trim().endsWith(",push") )
+    if ( ! password.trim().endsWith(",menu") && ! password.trim().endsWith(",push") )
     {
-      newPassword = password + ",push";
+      packet.attributes['User-Password'] = password.trim() + ",push";
       console.log("Access-Request for " + username + ", appending ,push for auto-push");
     }
     else
     {
       if (password.trim().endsWith(",menu"))
       {
-        newPassword = password.trim().replace(",menu", "");
+        packet.attributes['User-Password'] = password.trim().replace(",menu", "");
         console.log("Access-Request for " + username + ", request for menu, trimming ,menu from password field");
       }
 
       if (password.trim.endsWith(",push"))
       {
-        newPassword = password;
         console.log("Access-Request for " + username + ", request for push included, doing nothing");
       }
-
-      newPacket = radius.encode(
-      {
-        code: packet.code,
-        secret: secret,
-        attributes: [
-          ['NAS-IP-Address'], packet.attributes['NAS-IP-Address'],
-          ['User-Name'], packet.attributes['User-Name'],
-          ['User-Password'], newPassword]
-      });
+	  
     }
-
-    // Send the packet on to the opposite side
+	
+	// Send the packet on to the opposite side
     switch(rinfo.address)
     {
       case sourceIP:
-        radiusDestination = destinationIP;
-        radiusPort = destinationPort;
+        radiusDestinationIP = destinationIP;
+        radiusDestinationPort = destinationPort;
         break;
       case destinationIP:
-        radiusDestination = sourceIP;
-        radiusPort = sourcePort;
+        radiusDestinationIP = sourceIP;
+        radiusDestinationPort = sourcePort;
         break;
     }
+	
+	 // build the radius response
+    var response = radius.encode_response(
+	{
+		packet: packet,
+        code: packet.code,
+        secret: secret
+    });
+	
 
-    console.log("Sending newPacket to " + radiusDestination + ", port " + radiusPort);
-    server.send(newPacket, 0, newPacket.length, radiusDestinationPort, radiusDestinationIP, function(err, bytes)
+    server.send(response, 0, response.length, radiusDestinationPort, radiusDestinationIP, function(err, bytes)
     {
+	  console.log("Sending updated packet to " + radiusDestinationIP + ", port " + radiusDestinationPort + ", packet is " + JSON.stringify(packet));
       if (err)
         { console.log("Error sending response to ", destinationIP); }
     });
